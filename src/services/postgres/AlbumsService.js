@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const { nanoid } = require('nanoid');
+const { customAlphabet } = require('nanoid');
 const { albumMapToDBModel } = require('../../utils');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const InvariantError = require('../../exceptions/InvariantError');
@@ -10,7 +10,7 @@ class AlbumService {
   }
 
   async addAlbum({ name, year }) {
-    const id = `album-${nanoid(16)}`;
+    const id = `ALBUM${customAlphabet('1234567890', 16)()}`;
     const query = {
       text: 'INSERT INTO albums VALUES($1, $2, $3) RETURNING id',
       values: [id, name, year],

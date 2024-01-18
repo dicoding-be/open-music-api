@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const { nanoid } = require('nanoid');
+const { customAlphabet } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const { songMapToDBModel } = require('../../utils');
@@ -10,7 +10,7 @@ class SongService {
   }
 
   async addSong({ title, year, performer, genre, duration, albumId }) {
-    const id = `song-${nanoid(16)}`;
+    const id = `SONG${customAlphabet('1234567890', 16)()}`;
     const query = {
       text: 'INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id',
       values: [id, title, year, performer, genre, duration, albumId],
