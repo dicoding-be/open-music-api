@@ -12,14 +12,20 @@ const SongValidator = require('./validator/songs');
 
 const users = require('./api/users');
 const UserService = require('./services/postgres/UsersService');
-const UserValidator = require('./validator/users');
+const UsersValidator = require('./validator/users');
+
+const authentications = require('./api/authentications');
+const AuthenticationsService = require('./services/postgres/AuthenticationsService');
+const TokenManager = require('./tokenize/TokenManager');
+const AuthenticationsValidator = require('./validator/authentications');
 
 const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
   const albumService = new AlbumService();
   const songService = new SongService();
-  const userService = new UserService();
+  const usersService = new UserService();
+  const authenticationsService = new AuthenticationsService();
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,
@@ -48,15 +54,24 @@ const init = async () => {
     {
       plugin: users,
       options: {
-        service: userService,
-        validator: UserValidator,
+        service: usersService,
+        validator: UsersValidator,
+      },
+    },
+    {
+      plugin: authentications,
+      options: {
+        authenticationsService,
+        usersService,
+        tokenManager: TokenManager,
+        validator: AuthenticationsValidator,
       },
     },
   ]);
 
   // error handling memanfaatkan event extensions onPreResponse
   // disediakan oleh Hapi untuk mengintervensi response gagal sebelum ditampilkan ke user
-  server.ext('onPreResponse', async (request, h) => {
+  server.ext('onPreResponse', (request, h) => {
     // mendapatkan konteks response dari request
     const { response } = request;
     if (response instanceof Error) {
@@ -75,7 +90,7 @@ const init = async () => {
       }
       // penanganan server error sesuai kebutuhan
       const newResponse = h.response({
-        status: 'error',
+        status: 'fail',
         message: 'Internal server error',
       });
       newResponse.code(500);

@@ -11,6 +11,12 @@
     "rules": {
         "no-underscore-dangle": "off",
         "operator-linebreak": "off",
-        "object-curly-newline": "off"
+        "object-curly-newline": "off",
+        "max-len": [
+            "error",
+            {
+                "code": 200
+            }
+        ]
     }
 }
