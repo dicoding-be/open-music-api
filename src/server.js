@@ -1,16 +1,25 @@
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
+
 const albums = require('./api/albums');
-const AlbumValidator = require('./validator/albums');
 const AlbumService = require('./services/postgres/AlbumsService');
+const AlbumValidator = require('./validator/albums');
+
 const songs = require('./api/songs');
-const SongValidator = require('./validator/songs');
 const SongService = require('./services/postgres/SongsService');
+const SongValidator = require('./validator/songs');
+
+const users = require('./api/users');
+const UserService = require('./services/postgres/UsersService');
+const UserValidator = require('./validator/users');
+
+const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
   const albumService = new AlbumService();
   const songService = new SongService();
+  const userService = new UserService();
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,
@@ -25,18 +34,56 @@ const init = async () => {
     {
       plugin: albums,
       options: {
-        validator: AlbumValidator,
         service: albumService,
+        validator: AlbumValidator,
       },
     },
     {
       plugin: songs,
       options: {
-        validator: SongValidator,
         service: songService,
+        validator: SongValidator,
+      },
+    },
+    {
+      plugin: users,
+      options: {
+        service: userService,
+        validator: UserValidator,
       },
     },
   ]);
+
+  // error handling memanfaatkan event extensions onPreResponse
+  // disediakan oleh Hapi untuk mengintervensi response gagal sebelum ditampilkan ke user
+  server.ext('onPreResponse', async (request, h) => {
+    // mendapatkan konteks response dari request
+    const { response } = request;
+    if (response instanceof Error) {
+      // penanganan client error secara internal
+      if (response instanceof ClientError) {
+        const newResponse = h.response({
+          status: 'fail',
+          message: response.message,
+        });
+        newResponse.code(response.statusCode);
+        return newResponse;
+      }
+      // mempertahankan penanganan client error oleh hapi secara native, seperti 404, etc.
+      if (!response.isServer) {
+        return h.continue;
+      }
+      // penanganan server error sesuai kebutuhan
+      const newResponse = h.response({
+        status: 'error',
+        message: 'Internal server error',
+      });
+      newResponse.code(500);
+      return newResponse;
+    }
+    // jika bukan error, lanjutkan dengan response sebelumnya (tanpa terintervensi)
+    return h.continue;
+  });
 
   await server.start();
   console.log('Server running on %s', server.info.uri);
