@@ -65,6 +65,32 @@ class PlaylistSongService {
       throw new InvariantError('failed to delete the song from the playlist');
     }
   }
+
+  async addPlaylistSongActivity(playlistId, songId, userId, action) {
+    const id = `ACTSNG${customAlphabet('1234567890', 16)()}`;
+    const query = {
+      text: 'INSERT INTO playlist_song_activities VALUES($1, $2, $3, $4, $5) RETURNING id',
+      values: [id, playlistId, songId, userId, action],
+    };
+    const result = await this._pool.query(query);
+    if (!result.rows.length) {
+      throw new InvariantError('failed to add the playlist song activity');
+    }
+  }
+
+  async getPlaylistSongActivities(playlistId) {
+    const query = {
+      text: `
+        SELECT u.username, s.title, a.action, a.time
+        FROM playlist_song_activities AS a
+        JOIN users AS u ON a.user_id = u.id
+        JOIN songs AS s ON a.song_id = s.id
+        WHERE a.playlist_id = $1`,
+      values: [playlistId],
+    };
+    const result = await this._pool.query(query);
+    return result.rows;
+  }
 }
 
 module.exports = PlaylistSongService;
