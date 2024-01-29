@@ -1,8 +1,10 @@
 const autoBind = require('auto-bind');
 
 class PlaylistSongHandler {
-  constructor(service, validator) {
-    this._service = service;
+  constructor(playlistSongService, playlistService, songService, validator) {
+    this._playlistSongService = playlistSongService;
+    this._playlistService = playlistService;
+    this._songService = songService;
     this._validator = validator;
 
     autoBind(this);
@@ -11,11 +13,11 @@ class PlaylistSongHandler {
   async postPlaylistSongHandler(request, h) {
     this._validator.validatePostPlaylistSong(request.payload);
     const { songId } = request.payload;
+    const _song = await this._songService.getSongById(songId);
     const { id: playlistId } = request.params;
-    await this._service.addSongToPlaylist({
-      playlistId,
-      songId,
-    });
+    const { id: ownerId } = request.auth.credentials;
+    await this._playlistService.verifyPlaylistOwner(playlistId, ownerId);
+    await this._playlistSongService.addSongToPlaylist({ playlistId, songId });
     return h
       .response({
         status: 'success',
@@ -26,7 +28,9 @@ class PlaylistSongHandler {
 
   async getPlaylistSongsHandler(request) {
     const { id: playlistId } = request.params;
-    const playlist = await this._service.getPlaylistSongs(playlistId);
+    const { id: ownerId } = request.auth.credentials;
+    await this._playlistService.verifyPlaylistOwner(playlistId, ownerId);
+    const playlist = await this._playlistSongService.getPlaylistSongs(playlistId);
     return {
       status: 'success',
       data: {
@@ -39,7 +43,9 @@ class PlaylistSongHandler {
     this._validator.validateDeletePlaylistSong(request.payload);
     const { songId } = request.payload;
     const { id: playlistId } = request.params;
-    await this._service.deleteSongFromPlaylist(playlistId, songId);
+    const { id: ownerId } = request.auth.credentials;
+    await this._playlistService.verifyPlaylistOwner(playlistId, ownerId);
+    await this._playlistSongService.deleteSongFromPlaylist(playlistId, songId);
     return {
       status: 'success',
       message: 'Song successfully deleted from playlist.',

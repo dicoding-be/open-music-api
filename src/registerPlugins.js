@@ -27,7 +27,7 @@ const registerPlugins = async (server) => {
   const albumService = new AlbumService();
   const songService = new SongService();
   const playlistService = new PlaylistService();
-  const playlistSongService = new PlaylistSongService();
+  const playlistSongService = new PlaylistSongService(playlistService, songService);
   const usersService = new UserService();
   const authenticationsService = new AuthenticationsService();
 
@@ -56,7 +56,9 @@ const registerPlugins = async (server) => {
     {
       plugin: playlistSongs,
       options: {
-        service: playlistSongService,
+        songService,
+        playlistService,
+        playlistSongService,
         validator: PlaylistSongValidator,
       },
     },

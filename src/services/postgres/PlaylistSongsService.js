@@ -3,7 +3,7 @@ const { customAlphabet } = require('nanoid');
 const { playlistMapToDBModel } = require('../../utils');
 const InvariantError = require('../../exceptions/InvariantError');
 
-class PlaylistSongsService {
+class PlaylistSongService {
   constructor() {
     this._pool = new Pool();
   }
@@ -11,8 +11,8 @@ class PlaylistSongsService {
   async addSongToPlaylist({ playlistId, songId }) {
     const id = `PLSONG${customAlphabet('1234567890', 16)()}`;
     const query = {
-      text: 'INSERT INTO playlist_songs (playlist_id, song_id, id) VALUES($1, $2, $3) RETURNING id',
-      values: [playlistId, songId, id],
+      text: 'INSERT INTO playlist_songs (id, playlist_id, song_id) VALUES($1, $2, $3) RETURNING id',
+      values: [id, playlistId, songId],
     };
     const result = await this._pool.query(query);
     if (!result.rows.length) {
@@ -22,8 +22,7 @@ class PlaylistSongsService {
 
   async getPlaylistSongs(playlistId) {
     const query = {
-      text:
-      `SELECT 
+      text: `SELECT 
         p.id AS playlist_id,
         p.name AS playlist_name,
         u.username AS owner_username,
@@ -68,4 +67,4 @@ class PlaylistSongsService {
   }
 }
 
-module.exports = PlaylistSongsService;
+module.exports = PlaylistSongService;
