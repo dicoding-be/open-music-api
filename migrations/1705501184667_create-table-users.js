@@ -2,7 +2,7 @@
 
 exports.shorthands = undefined;
 
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.createTable('users', {
     id: {
       type: 'VARCHAR(50)',
@@ -22,22 +22,18 @@ exports.up = pgm => {
       notNull: true,
     },
     created_at: {
-      type: 'TIMESTAMP',
-      notNull: true,
+      type: 'TIMESTAMP WITH TIME ZONE',
       default: pgm.func('current_timestamp'),
+      notNull: true,
     },
     updated_at: {
-      type: 'TIMESTAMP',
-      notNull: true,
+      type: 'TIMESTAMP WITH TIME ZONE',
       default: pgm.func('current_timestamp'),
+      notNull: true,
     },
-    deleted_at: {
-      type: 'TIMESTAMP',
-      notNull: false,
-    }
-  })
+  });
 };
 
-exports.down = pgm => {
+exports.down = (pgm) => {
   pgm.dropTable('users');
 };

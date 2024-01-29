@@ -16,6 +16,16 @@ exports.up = (pgm) => {
       type: 'INTEGER',
       notNull: true,
     },
+    created_at: {
+      type: 'TIMESTAMP WITH TIME ZONE',
+      default: pgm.func('current_timestamp'),
+      notNull: true,
+    },
+    updated_at: {
+      type: 'TIMESTAMP WITH TIME ZONE',
+      default: pgm.func('current_timestamp'),
+      notNull: true,
+    },
   });
 };
 

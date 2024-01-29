@@ -14,12 +14,25 @@ exports.up = (pgm) => {
     },
     owner: {
       type: 'VARCHAR(50)',
-      references: 'users',
+      references: 'users(id)',
+      onDelete: 'cascade',
+      notNull: true,
+    },
+    created_at: {
+      type: 'TIMESTAMP WITH TIME ZONE',
+      default: pgm.func('current_timestamp'),
+      notNull: true,
+    },
+    updated_at: {
+      type: 'TIMESTAMP WITH TIME ZONE',
+      default: pgm.func('current_timestamp'),
       notNull: true,
     },
   });
+  pgm.createIndex('playlists', 'owner');
 };
 
 exports.down = (pgm) => {
+  pgm.dropIndex('playlists', 'owner');
   pgm.dropTable('playlists');
 };
