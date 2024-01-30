@@ -12,6 +12,7 @@
         "no-underscore-dangle": "off",
         "operator-linebreak": "off",
         "object-curly-newline": "off",
+        "no-unused-vars": "off",
         "max-len": [
             "error",
             {
