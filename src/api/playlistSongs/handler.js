@@ -16,7 +16,7 @@ class PlaylistSongHandler {
     const _song = await this._songService.getSongById(songId);
     const { id: playlistId } = request.params;
     const { id: ownerId } = request.auth.credentials;
-    await this._playlistService.verifyPlaylistOwner(playlistId, ownerId);
+    await this._playlistService.verifyPlaylistAccess(playlistId, ownerId);
     await this._playlistSongService.addSongToPlaylist({ playlistId, songId });
     await this._playlistSongService.addPlaylistSongActivity(playlistId, songId, ownerId, 'add');
     return h
@@ -30,7 +30,7 @@ class PlaylistSongHandler {
   async getPlaylistSongsHandler(request) {
     const { id: playlistId } = request.params;
     const { id: ownerId } = request.auth.credentials;
-    await this._playlistService.verifyPlaylistOwner(playlistId, ownerId);
+    await this._playlistService.verifyPlaylistAccess(playlistId, ownerId);
     const playlist = await this._playlistSongService.getPlaylistSongs(playlistId);
     return {
       status: 'success',
@@ -45,7 +45,7 @@ class PlaylistSongHandler {
     const { songId } = request.payload;
     const { id: playlistId } = request.params;
     const { id: ownerId } = request.auth.credentials;
-    await this._playlistService.verifyPlaylistOwner(playlistId, ownerId);
+    await this._playlistService.verifyPlaylistAccess(playlistId, ownerId);
     await this._playlistSongService.deleteSongFromPlaylist(playlistId, songId);
     await this._playlistSongService.addPlaylistSongActivity(playlistId, songId, ownerId, 'delete');
     return {
@@ -57,7 +57,7 @@ class PlaylistSongHandler {
   async getPlaylistSongActivitiesHandler(request) {
     const { id: playlistId } = request.params;
     const { id: ownerId } = request.auth.credentials;
-    await this._playlistService.verifyPlaylistOwner(playlistId, ownerId);
+    await this._playlistService.verifyPlaylistAccess(playlistId, ownerId);
     const activities = await this._playlistSongService.getPlaylistSongActivities(playlistId);
     return {
       status: 'success',
