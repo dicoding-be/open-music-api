@@ -44,10 +44,12 @@ const init = async () => {
   setupErrorHandling(server);
 
   await server.start();
+  // eslint-disable-next-line no-console
   console.log('Server running on %s', server.info.uri);
 };
 
 process.on('unhandledRejection', (err) => {
+  // eslint-disable-next-line no-console
   console.log(err);
   process.exit(1);
 });
